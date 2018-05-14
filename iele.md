@@ -229,15 +229,6 @@ module IELE-INFRASTRUCTURE
     syntax Mode ::= "NORMAL" [klabel(NORMAL)] | "VMTESTS"
 ```
 
--   `#setMode_` sets the mode to the supplied one.
-
-```k
-    syntax Mode ::= "#setMode" Mode
- // -------------------------------
-    rule <k> #setMode EXECMODE => . ... </k> <mode> _ => EXECMODE </mode>
-    rule <k> EX:Exception ~> (#setMode _ => .) ... </k>
-```
-
 Hardware
 --------
 
@@ -245,7 +236,6 @@ The `callStack` cell stores a list of previous VM execution states.
 
 -   `#pushCallStack` saves a copy of VM execution state on the `callStack`.
 -   `#popCallStack` restores the top element of the `callStack`.
--   `#dropCallStack` removes the top element of the `callStack`.
 
 ```k
     syntax InternalOp ::= "#pushCallStack"
@@ -259,10 +249,6 @@ The `callStack` cell stores a list of previous VM execution states.
     rule <k> #popCallStack => . ... </k>
          <callFrame> _ => FRAME </callFrame>
          <callStack> (ListItem(<callFrame> FRAME </callFrame>) => .List) ... </callStack>
-
-    syntax InternalOp ::= "#dropCallStack"
- // --------------------------------------
-    rule <k> #dropCallStack => . ... </k> <callStack> (ListItem(_) => .List) ... </callStack>
 ```
 
 The `interimStates` cell stores a list of previous world states.
@@ -605,14 +591,6 @@ Some checks if an opcode will throw an exception are relatively quick and done u
  // -------------------------------------------------------
     rule #invalid? [ _ = call @iele.invalid(.Operands) ] => #exception USER_ERROR
     rule #invalid? [ OP ] => . [owise]
-```
-
-```k
-    syntax Bool ::= isJumpOp ( Instruction ) [function]
- // ---------------------------------------------------
-    rule isJumpOp(br _) => true
-    rule isJumpOp(br _ , _) => true
-    rule isJumpOp(...) => false [owise]
 ```
 
 -   `#static?` determines if the opcode should throw an exception due to the static flag (i.e., an attempt to change state inside a contract called with `staticcall`)
